@@ -1,0 +1,30 @@
+name: Daily DB Connect
+
+on:
+  schedule:
+    - cron: '0 1 * * *'  # UTC 时间 1 点 = 北京时间 9 点
+  workflow_dispatch:
+
+jobs:
+  connect-db:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Install PostgreSQL client
+        run: sudo apt-get update && sudo apt-get install -y postgresql-client
+
+      - name: Connect to PostgreSQL and run test query
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: |
+          echo "Connecting to PostgreSQL..."
+          RESULT=$(psql "$DATABASE_URL" -t -c "SELECT '✅ Connection successful';")
+          if [[ "$RESULT" == *"✅ Connection successful"* ]]; then
+            echo "✅ Database connection test passed."
+          else
+            echo "❌ Database connection test failed."
+            exit 1
+          fi
