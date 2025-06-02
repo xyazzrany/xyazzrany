@@ -1,8 +1,8 @@
-name: Daily DB Connect
+name: Daily DB Connect Two DBs
 
 on:
   schedule:
-    - cron: '0 1 * * *'  # UTC 时间 1 点 = 北京时间 9 点
+    - cron: '0 1 * * *'  # UTC 1 点 = 北京时间 9 点
   workflow_dispatch:
 
 jobs:
@@ -16,15 +16,28 @@ jobs:
       - name: Install PostgreSQL client
         run: sudo apt-get update && sudo apt-get install -y postgresql-client
 
-      - name: Connect to PostgreSQL and run test query
+      - name: Test connection to first database
         env:
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          DATABASE_URL_1: ${{ secrets.DATABASE_URL_1 }}
         run: |
-          echo "Connecting to PostgreSQL..."
-          RESULT=$(psql "$DATABASE_URL" -t -c "SELECT '✅ Connection successful';")
-          if [[ "$RESULT" == *"✅ Connection successful"* ]]; then
-            echo "✅ Database connection test passed."
+          echo "Connecting to first PostgreSQL database..."
+          RESULT=$(psql "$DATABASE_URL_1" -t -c "SELECT '✅ Connection to DB1 successful';")
+          if [[ "$RESULT" == *"✅ Connection to DB1 successful"* ]]; then
+            echo "✅ First database connection test passed."
           else
-            echo "❌ Database connection test failed."
+            echo "❌ First database connection test failed."
+            exit 1
+          fi
+
+      - name: Test connection to second database
+        env:
+          DATABASE_URL_2: ${{ secrets.DATABASE_URL_2 }}
+        run: |
+          echo "Connecting to second PostgreSQL database..."
+          RESULT=$(psql "$DATABASE_URL_2" -t -c "SELECT '✅ Connection to DB2 successful';")
+          if [[ "$RESULT" == *"✅ Connection to DB2 successful"* ]]; then
+            echo "✅ Second database connection test passed."
+          else
+            echo "❌ Second database connection test failed."
             exit 1
           fi
