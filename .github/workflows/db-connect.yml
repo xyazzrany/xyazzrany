@@ -1,4 +1,4 @@
-name: Daily DB Connect Two DBs
+name: Connect Two DBs
 
 on:
   schedule:
